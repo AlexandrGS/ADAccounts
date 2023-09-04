@@ -16,7 +16,7 @@
     #Файл с акаунтами. Без пробелов на початку і у кінці рядка
     $accounts_file = ".\accounts.txt",
     #
-    [string]$DescriptionPostfix = "Згідно ______",
+    [string]$DescriptionPostfix = "згідно ______",
     #Увимкнути акаунти з $accounts_file
     [switch]$Enable = $false,
     #Вимкнути акаунти з $accounts_file
@@ -128,7 +128,14 @@ function ChangeADAccountPassword($ADAccount, $Password){
 }
 
 function InitOk(){
+    #Скріпт повинен бути запущений з правами адміністратора
+    if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+        Write-Error " Недосттньо прав для виконаня скріпта. Потрібен запуск з правами адміністратора и запуск ще раз"
+        Return $False
+    }
+
     if( $Enable -or $Disable -or $ChangePassword){
+#    
     }else{
         $Msg = "Обовязково повинен бути чи вхідний параметр Enable чи Disable чи ChangePassword"
         Write-Error -Message $Msg -Category InvalidArgument
