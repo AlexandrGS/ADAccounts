@@ -139,10 +139,12 @@ function InitOk(){
         Write-Error " Недосттньо прав для виконаня скріпта. Потрібен запуск з правами адміністратора"
         Return $False
     }
-
+    
+    #Перевірка існування файла з акаунтами
     if( -not Test-Path -Path $accounts_file){
-        $Msg "Файл " + $accounts_file + " з іменами і/та паролями не знайдено"
-        Write-Error "" -Category InvalidArgument
+        $Msg = "Файл " + $accounts_file + " з акаунтами не знайдено"
+        Write-Error $Msg -Category InvalidArgument
+        Return $False
     }
 
     if( $Enable -or $Disable -or $ChangePassword){
