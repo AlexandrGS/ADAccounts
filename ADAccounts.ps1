@@ -1,40 +1,40 @@
- #Скріпт для обробці разом купи акаунтов домена Active Directory
- #Программа отримуе файл з переліком акаунтов користувачів чи акаунтов і через  или акаунты и через пробіл паролі
- #У відповідності до вхідних [switch] скріпта щось робить з акааунтами - вмикае, вимикае, змінюе паролі
- #При деяких дыях, змынюе поле "Description" акаунта
- #Реальні зміни виконуються тільки якщо в командному рядку присутній параметр -Force
- #Якщо потребуеться виконати дії, котрі не вимагають пароля (увімкнути-вимкнути акаунт), а в файле пароль присутній, то пароль ігноруеться
+ #РЎРєСЂС–РїС‚ РґР»СЏ РѕР±СЂРѕР±С†С– СЂР°Р·РѕРј РєСѓРїРё Р°РєР°СѓРЅС‚РѕРІ РґРѕРјРµРЅР° Active Directory
+ #РџСЂРѕРіСЂР°РјРјР° РѕС‚СЂРёРјСѓРµ С„Р°Р№Р» Р· РїРµСЂРµР»С–РєРѕРј Р°РєР°СѓРЅС‚РѕРІ РєРѕСЂРёСЃС‚СѓРІР°С‡С–РІ С‡Рё Р°РєР°СѓРЅС‚РѕРІ С– С‡РµСЂРµР· РїСЂРѕР±С–Р» РїР°СЂРѕР»С–
+ #РЈ РІС–РґРїРѕРІС–РґРЅРѕСЃС‚С– РґРѕ РІС…С–РґРЅРёС… [switch] СЃРєСЂС–РїС‚Р° С‰РѕСЃСЊ СЂРѕР±РёС‚СЊ Р· Р°РєР°Р°СѓРЅС‚Р°РјРё - РІРјРёРєР°Рµ, РІРёРјРёРєР°Рµ, Р·РјС–РЅСЋРµ РїР°СЂРѕР»С–
+ #РџСЂРё РґРµСЏРєРёС… РґС–СЏС…, Р·РјС–РЅСЋРµ РїРѕР»Рµ "Description" Р°РєР°СѓРЅС‚Р°
+ #Р РµР°Р»СЊРЅС– Р·РјС–РЅРё РІРёРєРѕРЅСѓСЋС‚СЊСЃСЏ С‚С–Р»СЊРєРё СЏРєС‰Рѕ РІ РєРѕРјР°РЅРґРЅРѕРјСѓ СЂСЏРґРєСѓ РїСЂРёСЃСѓС‚РЅС–Р№ РїР°СЂР°РјРµС‚СЂ -Force
+ #РЇРєС‰Рѕ РїРѕС‚СЂРµР±СѓРµС‚СЊСЃСЏ РІРёРєРѕРЅР°С‚Рё РґС–С—, РєРѕС‚СЂС– РЅРµ РІРёРјР°РіР°СЋС‚СЊ РїР°СЂРѕР»СЏ (СѓРІС–РјРєРЅСѓС‚Рё-РІРёРјРєРЅСѓС‚Рё Р°РєР°СѓРЅС‚), Р° РІ С„Р°Р№Р»Рµ РїР°СЂРѕР»СЊ РїСЂРёСЃСѓС‚РЅС–Р№, С‚Рѕ РїР°СЂРѕР»СЊ С–РіРЅРѕСЂСѓРµС‚СЊСЃСЏ
  #
  
  Param (
-    #Файл с акаунтами у вигляді
+    #Р¤Р°Р№Р» СЃ Р°РєР°СѓРЅС‚Р°РјРё Сѓ РІРёРіР»СЏРґС–
     #Ivanov.I.I
     #Petrov.P.P
-    #Чи через внутрішній пробел 
+    #Р§Рё Р°РєР°СѓРЅС‚ Р· РїР°СЂРѕР»РµРј СЂРѕР·РґС–Р»РµРЅС– РїСЂРѕР±РµР»РѕРј 
     #Sidorov.S.S Password1
     #Vasechkin.V.V Password2
-    #Файл с акаунтами. Без пробелов на початку і у кінці рядка
+    #Р¤Р°Р№Р» СЃ Р°РєР°СѓРЅС‚Р°РјРё. Р‘РµР· РїСЂРѕР±РµР»РѕРІ РЅР° РїРѕС‡Р°С‚РєСѓ С– Сѓ РєС–РЅС†С– СЂСЏРґРєР°
     $accounts_file = ".\accounts.txt",
     #
-    [string]$DescriptionPostfix = "згідно ______",
-    #Увимкнути акаунти з $accounts_file
+    [string]$DescriptionPostfix = "Р·РіС–РґРЅРѕ ______",
+    #РЈРІРёРјРєРЅСѓС‚Рё Р°РєР°СѓРЅС‚Рё Р· $accounts_file
     [switch]$Enable = $false,
-    #Вимкнути акаунти з $accounts_file
+    #Р’РёРјРєРЅСѓС‚Рё Р°РєР°СѓРЅС‚Рё Р· $accounts_file
     [switch]$Disable = $false,
-    #Змінити пароль акаунтов з $accounts_file
+    #Р—РјС–РЅРёС‚Рё РїР°СЂРѕР»СЊ Р°РєР°СѓРЅС‚РѕРІ Р· $accounts_file
     [switch]$ChangePassword = $false,
-    #Якщо увімкнен $ChangePassword то додатково установити зміну пароля при наступному вході
+    #Р”РѕРґР°С‚РєРѕРІРѕ СѓСЃС‚Р°РЅРѕРІРёС‚Рё Р·РјС–РЅСѓ РїР°СЂРѕР»СЏ РїСЂРё РЅР°СЃС‚СѓРїРЅРѕРјСѓ РІС…РѕРґС–
     [switch]$ChangePasswordAtLogon = $false,
-    #Реально застосувати зміни. Без цього параметра тільки імітація 
+    #Р РµР°Р»СЊРЅРѕ Р·Р°СЃС‚РѕСЃСѓРІР°С‚Рё Р·РјС–РЅРё. Р‘РµР· С†СЊРѕРіРѕ РїР°СЂР°РјРµС‚СЂР° С‚С–Р»СЊРєРё С–РјС–С‚Р°С†С–СЏ 
     [switch]$Force = $false
 )
 
-[string]$DescriptionPrefix_Enable  = "Увімкнено"
-[string]$DescriptionPrefix_Disable = "Вимкнено"
-[string]$DescriptionPrefix_ChangePassword = "Змінено пароль"
+[string]$DescriptionPrefix_Enable  = "РЈРІС–РјРєРЅРµРЅРѕ"
+[string]$DescriptionPrefix_Disable = "Р’РёРјРєРЅРµРЅРѕ"
+[string]$DescriptionPrefix_ChangePassword = "Р—РјС–РЅРµРЅРѕ РїР°СЂРѕР»СЊ"
 
-#У кожен заблокований акаунт поле "Описание" встановлюеться в значення DescriptionProperty
-#DescriptionProperty формуеться далі
+#РЈ РєРѕР¶РµРЅ Р·Р°Р±Р»РѕРєРѕРІР°РЅРёР№ Р°РєР°СѓРЅС‚ РїРѕР»Рµ "РћРїРёСЃР°РЅРёРµ" РІСЃС‚Р°РЅРѕРІР»СЋРµС‚СЊСЃСЏ РІ Р·РЅР°С‡РµРЅРЅСЏ DescriptionProperty
+#DescriptionProperty С„РѕСЂРјСѓРµС‚СЊСЃСЏ РґР°Р»С–
 $CurrentDate = Get-Date -Format "dd:MM:yyyy"
 $Script:DescriptionProperty=""
 
@@ -47,97 +47,103 @@ $Script:CountErrorByHandlingAccount = 0
 
 Import-Module ActiveDirectory
 
-#Вимкнути акаунт
+#Р’РёРјРєРЅСѓС‚Рё Р°РєР°СѓРЅС‚
 function DisableADAccount($ADAccount){
     $SAMAccountName = $ADAccount.SAMAccountName
     if($ADAccount.Enabled) {
-        Write-Host  "Аккаунт " $SAMAccountName " увімкнен і може бути заблокован. Блокую" -NoNewline
+        Write-Host  "РђРєРєР°СѓРЅС‚ " $SAMAccountName " СѓРІС–РјРєРЅРµРЅ С– РјРѕР¶Рµ Р±СѓС‚Рё Р·Р°Р±Р»РѕРєРѕРІР°РЅ. Р‘Р»РѕРєСѓСЋ" -NoNewline
         $Script:CountReadyAccount++
         try {
             if($Force){
                 Disable-ADAccount -Identity $ADAccount
                 Set-ADUser -Identity $ADAccount -Description "$Script:DescriptionProperty"
+                if($ChangePasswordAtLogon){
+                    Set-ADUser -Identity $ADAccount  -ChangePasswordAtLogon $true
+                }
             }
             $Script:CountDisablingAccount++
-            Write-Host " - успішно" -NoNewline
+            Write-Host " - СѓСЃРїС–С€РЅРѕ" -NoNewline
         }
         catch{
             $Script:CountErrorByHandlingAccount++
-            Write-Host " - якась помилка" -NoNewline
+            Write-Host " - СЏРєР°СЃСЊ РїРѕРјРёР»РєР°" -NoNewline
         }
     }else{
-        Write-Host "Аккаунт " $SAMAccountName " вже заблокован. Залишаю як е" -NoNewline
+        Write-Host "РђРєРєР°СѓРЅС‚ " $SAMAccountName " РІР¶Рµ Р·Р°Р±Р»РѕРєРѕРІР°РЅ. Р—Р°Р»РёС€Р°СЋ СЏРє Рµ" -NoNewline
     }
 }
 
-#Увімкнути акаунт
+#РЈРІС–РјРєРЅСѓС‚Рё Р°РєР°СѓРЅС‚
 function EnableADAccount($ADAccount){
     $SAMAccountName = $ADAccount.SAMAccountName
     if( -not $ADAccount.Enabled ) {
-        Write-Host  "Аккаунт " $SAMAccountName " вимкнен и може бути увімкнен. Вмикаю" -NoNewline
+        Write-Host  "РђРєРєР°СѓРЅС‚ " $SAMAccountName " РІРёРјРєРЅРµРЅ Рё РјРѕР¶Рµ Р±СѓС‚Рё СѓРІС–РјРєРЅРµРЅ. Р’РјРёРєР°СЋ" -NoNewline
         $Script:CountReadyAccount++
         try {
             if($Force){
                 Enable-ADAccount -Identity $ADAccount
                 Set-ADUser -Identity $ADAccount -Description "$Script:DescriptionProperty"
+                if($ChangePasswordAtLogon){
+                    Set-ADUser -Identity $ADAccount  -ChangePasswordAtLogon $true
+                }
             }
             $Script:CountEnablingAccount++
-            Write-Host " - успішно" -NoNewline
+            Write-Host " - СѓСЃРїС–С€РЅРѕ" -NoNewline
         }
         catch{
             $Script:CountErrorByHandlingAccount++
-            Write-Host " - якась помилка" -NoNewline
+            Write-Host " - СЏРєР°СЃСЊ РїРѕРјРёР»РєР°" -NoNewline
         }
     }else{
-        Write-Host "Аккаунт " $SAMAccountName "вже увімкнен. Залишаю як е" -NoNewline
+        Write-Host "РђРєРєР°СѓРЅС‚ " $SAMAccountName "РІР¶Рµ СѓРІС–РјРєРЅРµРЅ. Р—Р°Р»РёС€Р°СЋ СЏРє Рµ" -NoNewline
     }
 }
 
-#Змінити пароль акаунта
+#Р—РјС–РЅРёС‚Рё РїР°СЂРѕР»СЊ Р°РєР°СѓРЅС‚Р°
 function ChangeADAccountPassword($ADAccount, $Password){
     $SAMAccountName = $ADAccount.SAMAccountName
 
     if($Password -eq "" -or $Password -eq $null){
-        Write-Error -Message "Функція ChangeADAccountPassword отримала пароль нульової довжини" -Category InvalidArgument
+        Write-Error -Message "Р¤СѓРЅРєС†С–СЏ ChangeADAccountPassword РѕС‚СЂРёРјР°Р»Р° РїР°СЂРѕР»СЊ РЅСѓР»СЊРѕРІРѕС— РґРѕРІР¶РёРЅРё" -Category InvalidArgument
         return
     }
 
     if( -not $ADAccount.Enabled ) {
-        $Msg = "Акаунт " + $SAMAccountName +" вже вимкнен. Залишаю як е"
+        $Msg = "РђРєР°СѓРЅС‚ " + $SAMAccountName +" РІР¶Рµ РІРёРјРєРЅРµРЅ. Р—Р°Р»РёС€Р°СЋ СЏРє Рµ"
         Write-Error -Message $Msg -Category InvalidArgument
     }
 
-    Write-Host  "Аккаунт " $SAMAccountName " пароль змінено" -NoNewline
+    Write-Host  "РђРєРєР°СѓРЅС‚ " $SAMAccountName " РїР°СЂРѕР»СЊ Р·РјС–РЅРµРЅРѕ" -NoNewline
     $Script:CountReadyAccount++
 
     try {
         if($Force){
-            Set-ADAccountPassword -Identity $ADAccount  -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "$Password" -Force -Verbose) –PassThru
-#            Set-ADUser -Identity $ADAccount -Description "$Script:DescriptionProperty"
+            Set-ADAccountPassword -Identity $ADAccount  -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "$Password" -Force -Verbose) вЂ“PassThru
+#            Set-ADUser -Identity $ADAccount -Description "$Script:DescriptionProperty" #РџСЂРё Р·РјС–РЅС– РїР°СЂРѕР»СЏ РЅРµ РїРѕС‚СЂС–Р±РЅРѕ РјС–РЅСЏС‚Рё РїРѕР»Рµ Description Р°РєР°СѓРЅС‚Р°
             if($ChangePasswordAtLogon){
                 Set-ADUser -Identity $ADAccount  -ChangePasswordAtLogon $true
             }
         }
         $Script:CountChangePassword++
-        Write-Host " - успішно" -NoNewline
+        Write-Host " - СѓСЃРїС–С€РЅРѕ" -NoNewline
     }
     catch{
         $Script:CountErrorByHandlingAccount++
-        Write-Host " - якась помилка" -NoNewline
+        Write-Host " - СЏРєР°СЃСЊ РїРѕРјРёР»РєР°" -NoNewline
     }
 }
 
 function InitOk(){
-    #Скріпт повинен бути запущений з правами адміністратора
+    #РЎРєСЂС–РїС‚ РїРѕРІРёРЅРµРЅ Р±СѓС‚Рё Р·Р°РїСѓС‰РµРЅРёР№ Р· РїСЂР°РІР°РјРё Р°РґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂР°
     if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-        Write-Error " Недосттньо прав для виконаня скріпта. Потрібен запуск з правами адміністратора и запуск ще раз"
+        Write-Error " РќРµРґРѕСЃС‚С‚РЅСЊРѕ РїСЂР°РІ РґР»СЏ РІРёРєРѕРЅР°РЅСЏ СЃРєСЂС–РїС‚Р°. РџРѕС‚СЂС–Р±РµРЅ Р·Р°РїСѓСЃРє Р· РїСЂР°РІР°РјРё Р°РґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂР°"
         Return $False
     }
 
     if( $Enable -or $Disable -or $ChangePassword){
 #    
     }else{
-        $Msg = "Обовязково повинен бути чи вхідний параметр Enable чи Disable чи ChangePassword"
+        $Msg = "РћР±РѕРІСЏР·РєРѕРІРѕ РїРѕРІРёРЅРµРЅ Р±СѓС‚Рё С‡Рё РІС…С–РґРЅРёР№ РїР°СЂР°РјРµС‚СЂ Enable С‡Рё Disable С‡Рё ChangePassword"
         Write-Error -Message $Msg -Category InvalidArgument
         Return $False
     }
@@ -159,7 +165,7 @@ function InitOk(){
 }
 
 if (-not (InitOk)) {
-    $Msg = "Помилка при ініціалізації програми"
+    $Msg = "РџРѕРјРёР»РєР° РїСЂРё С–РЅС–С†С–Р°Р»С–Р·Р°С†С–С— РїСЂРѕРіСЂР°РјРё"
     Write-Error -Message $Msg -Category InvalidArgument
     Return
 }
@@ -171,14 +177,14 @@ ForEach($Line in Get-Content $accounts_file){
     $Do = $True
 
     $UserName = $Line.split(" ")[0]
-    $Password = $Line.split(" ")[1] #Якщо пароля в текстовому файлі не буде, то тут пустий рядок
+    $Password = $Line.split(" ")[1] #РЇРєС‰Рѕ РїР°СЂРѕР»СЏ РІ С‚РµРєСЃС‚РѕРІРѕРјСѓ С„Р°Р№Р»С– РЅРµ Р±СѓРґРµ, С‚Рѕ С‚СѓС‚ РїСѓСЃС‚РёР№ СЂСЏРґРѕРє
 
     try {
         $ADAccount = Get-ADUser $UserName
     }
 
     catch {
-        $Msg = "Помилка при отриманні данних акаунта" + $UserName
+        $Msg = "РџРѕРјРёР»РєР° РїСЂРё РѕС‚СЂРёРјР°РЅРЅС– РґР°РЅРЅРёС… Р°РєР°СѓРЅС‚Р°" + $UserName
         Write-Error -Message $Msg -Category ReadError
         $Do = $false
     }
@@ -203,14 +209,14 @@ ForEach($Line in Get-Content $accounts_file){
 }#ForEach($Line in Get-Conten
 
     Write-Host "---------------------------------------------------------"
-    Write-Host "Усього з файла прочитано      " $Script:CountReadingAccounts        " акаунтов"
-    Write-Host "З них " $Script:CountReadyAccount " готові і можуть бути оброблені"
-    Write-Host "Усього намагався увімкнути    " $Script:CountEnablingAccount        " акаунтов"
-    Write-Host "Усього намагався заблокувати  " $Script:CountDisablingAccount       " акаунтов"
-    Write-Host "Усього намагався зминити пароль " $Script:CountChangePassword       " акаунтов"
-    Write-Host "Не вдалося обробити "           $Script:CountErrorByHandlingAccount " акаунтов"
+    Write-Host "РЈСЃСЊРѕРіРѕ Р· С„Р°Р№Р»Р° РїСЂРѕС‡РёС‚Р°РЅРѕ      " $Script:CountReadingAccounts        " Р°РєР°СѓРЅС‚РѕРІ"
+    Write-Host "Р— РЅРёС… " $Script:CountReadyAccount " РіРѕС‚РѕРІС– С– РјРѕР¶СѓС‚СЊ Р±СѓС‚Рё РѕР±СЂРѕР±Р»РµРЅС–"
+    Write-Host "РЈСЃСЊРѕРіРѕ РЅР°РјР°РіР°РІСЃСЏ СѓРІС–РјРєРЅСѓС‚Рё    " $Script:CountEnablingAccount        " Р°РєР°СѓРЅС‚РѕРІ"
+    Write-Host "РЈСЃСЊРѕРіРѕ РЅР°РјР°РіР°РІСЃСЏ Р·Р°Р±Р»РѕРєСѓРІР°С‚Рё  " $Script:CountDisablingAccount       " Р°РєР°СѓРЅС‚РѕРІ"
+    Write-Host "РЈСЃСЊРѕРіРѕ РЅР°РјР°РіР°РІСЃСЏ Р·РјРёРЅРёС‚Рё РїР°СЂРѕР»СЊ " $Script:CountChangePassword       " Р°РєР°СѓРЅС‚РѕРІ"
+    Write-Host "РќРµ РІРґР°Р»РѕСЃСЏ РѕР±СЂРѕР±РёС‚Рё "           $Script:CountErrorByHandlingAccount " Р°РєР°СѓРЅС‚РѕРІ"
     Write-Host "---------------------------------------------------------"
 
     if(-not $Force){
-        Write-Warning "Реальной зміни акаунтов не було. Якщо бажаете реальних змін додайте параметр -Force"
+        Write-Warning "Р РµР°Р»СЊРЅРѕР№ Р·РјС–РЅРё Р°РєР°СѓРЅС‚РѕРІ РЅРµ Р±СѓР»Рѕ. РЇРєС‰Рѕ Р±Р°Р¶Р°РµС‚Рµ СЂРµР°Р»СЊРЅРёС… Р·РјС–РЅ РґРѕРґР°Р№С‚Рµ РїР°СЂР°РјРµС‚СЂ -Force"
     }
