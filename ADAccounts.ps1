@@ -140,6 +140,11 @@ function InitOk(){
         Return $False
     }
 
+    if( -not Test-Path -Path $accounts_file){
+        $Msg "Файл " + $accounts_file + " з іменами і/та паролями не знайдено"
+        Write-Error "" -Category InvalidArgument
+    }
+
     if( $Enable -or $Disable -or $ChangePassword){
 #    
     }else{
