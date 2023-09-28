@@ -184,7 +184,7 @@ ForEach($Line in Get-Content $accounts_file){
     }
 
     catch {
-        $Msg = "Помилка при отриманні данних акаунта" + $UserName
+        $Msg = "Помилка при отриманні данних акаунта " + $UserName
         Write-Error -Message $Msg -Category ReadError
         $Do = $false
     }
