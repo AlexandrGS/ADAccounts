@@ -141,12 +141,12 @@ function InitOk(){
     }
     
     #Перевірка існування файла з акаунтами
-    if( -not Test-Path -Path $accounts_file){
+    if( -not (Test-Path -Path $accounts_file) ){
         $Msg = "Файл " + $accounts_file + " з акаунтами не знайдено"
-        Write-Error $Msg -Category InvalidArgument
-        Return $False
+        Write-Error $Msg  -Category InvalidArgument
+        return $false
     }
-
+    
     if( $Enable -or $Disable -or $ChangePassword){
 #    
     }else{
