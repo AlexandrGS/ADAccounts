@@ -14,15 +14,18 @@ Petrenko.P.P password2
 Sydorenko.S.S password3  
 
 Увімкнути усі акаунти з файла accounts.txt. Якщо у файлі будуть паролі, вони будуть проігноровані  
-.\ADAccounts.ps1 -Accounts_File="D:\accounts.txt" -Enable -Force
+.\ADAccounts.ps1 -Accounts_File="D:\accounts.txt" -EnableADAccounts -Force
 
 Вимкнути усі акаунти з файла accounts.txt. Якщо у файлі будуть паролі, вони будуть проігноровані  
-.\ADAccounts.ps1 -Accounts_File="D:\accounts.txt" -Disable -Force
+.\ADAccounts.ps1 -Accounts_File="D:\accounts.txt" -DisableADAccounts -Force
 
 Змінити паролі у всіх акаунтов з файла accounts.txt. У файлі повинні бути паролі  
-.\ADAccounts.ps1 -Accounts_File="D:\accounts.txt" -ChangePassword -Force
+.\ADAccounts.ps1 -Accounts_File="D:\accounts.txt" -ChangePasswordADAccounts -Force
 
 Змінити паролі у всіх акаунтов з файла accounts.txt. І додатково поставити вимагати зміну пароля на наступному вході користувача. У файлі повинні бути паролі  
 .\ADAccounts.ps1 -Accounts_File="D:\accounts.txt" -ChangePassword -ChangePasswordAtLogon -Force
+
+Видалити всі акаунти з з файла accounts.txt
+.\ADAccounts.ps1 -Accounts_File="D:\accounts.txt" -DeleteADAccounts -Force
 
 Якщо параметр -Force буде відсутній, то виконаеться лише імітація роботи скріпта.
