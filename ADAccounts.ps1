@@ -61,6 +61,12 @@ Import-Module ActiveDirectory
 #Вимкнути акаунт
 function DisableADAccount($ADAccount){
     $SAMAccountName = $ADAccount.SAMAccountName
+
+    if( ($ADAccount -eq "") -or ($ADAccount -eq $null) -or ($ADAccount -eq 0) ){
+        Write-Error -Message "Функція DisableADAccount отримала пустий параметр $ADAccount" -Category InvalidArgument
+        return
+    }
+
     if($ADAccount.Enabled) {
         Write-Host  "Аккаунт " $SAMAccountName " увімкнен і може бути заблокован. Блокую" -NoNewline
         $Script:CountReadyAccount++
@@ -87,6 +93,12 @@ function DisableADAccount($ADAccount){
 #Увімкнути акаунт
 function EnableADAccount($ADAccount){
     $SAMAccountName = $ADAccount.SAMAccountName
+
+    if( ($ADAccount -eq "") -or ($ADAccount -eq $null) -or ($ADAccount -eq 0) ){
+        Write-Error -Message "Функція EnableADAccount отримала пустий параметр $ADAccount" -Category InvalidArgument
+        return
+    }
+
     if( -not $ADAccount.Enabled ) {
         Write-Host  "Аккаунт " $SAMAccountName " вимкнен и може бути увімкнен. Вмикаю" -NoNewline
         $Script:CountReadyAccount++
@@ -113,6 +125,12 @@ function EnableADAccount($ADAccount){
 #
 function DeleteADAccount($ADAccount){
     $SAMAccountName = $ADAccount.SAMAccountName
+
+    if( ($ADAccount -eq "") -or ($ADAccount -eq $null) -or ($ADAccount -eq 0) ){
+        Write-Error -Message "Функція DeleteADAccount отримала пустий параметр $ADAccount" -Category InvalidArgument
+        return
+    }
+
     if(($ADAccount -ne $null) -and ($ADAccount -ne "") ){
         Write-Host  "Аккаунт " $SAMAccountName " видаляю" -NoNewline
         $Script:CountReadyAccount++
@@ -137,6 +155,11 @@ function DeleteADAccount($ADAccount){
 #Змінити пароль акаунта
 function ChangeADAccountPassword($ADAccount, $Password){
     $SAMAccountName = $ADAccount.SAMAccountName
+
+    if( ($ADAccount -eq "") -or ($ADAccount -eq $null) -or ($ADAccount -eq 0) ){
+        Write-Error -Message "Функція ChangeADAccountPassword отримала пустий параметр $ADAccount" -Category InvalidArgument
+        return
+    }
 
     if($Password -eq "" -or $Password -eq $null){
         Write-Error -Message "Функція ChangeADAccountPassword отримала пароль нульової довжини" -Category InvalidArgument
@@ -186,7 +209,7 @@ function InitOk(){
     if( $EnableADAccounts -or $DisableADAccounts -or $DeleteADAccounts -or $ChangePasswordADAccounts){
 #    
     }else{
-        $Msg = "Обовязково повинен бути чи вхідний параметр EnableADAccounts чи DisableADAccounts чи ChangePasswordADAccounts"
+        $Msg = "Обовязково повинен бути чи вхідний параметр EnableADAccounts чи DisableADAccounts чи DeleteADAccounts чи ChangePasswordADAccounts"
         Write-Error -Message $Msg -Category InvalidArgument
         Return $False
     }
@@ -219,8 +242,8 @@ ForEach($Line in Get-Content $accounts_file){
     $ADAccount = 0
     $Do = $True
 
-    $UserName = $Line.split(" ")[0]
-    $Password = $Line.split(" ")[1] #Якщо пароля в текстовому файлі не буде, то тут пустий рядок
+    $UserName = $Line.Trim().Split(" ")[0]
+    $Password = $Line.Trim().split(" ")[1] #Якщо пароля в текстовому файлі не буде, то тут пустий рядок
 
     try {
         $ADAccount = Get-ADUser -Identity $UserName
