@@ -2,7 +2,7 @@
  #https://github.com/AlexandrGS/ADAccounts
  #
  #Скріпт для обробці разом купи акаунтов домена Active Directory
- #Программа отримуе файл з переліком акаунтов користувачів чи акаунтов і через пробіл паролі
+ #Программа отримуе файл з переліком акаунтов користувачів чи акаунтов і через пробіли та табуляцію - паролі
  #У відповідності до вхідних [switch] скріпта щось робить з акааунтами - вмикае, вимикае, змінюе паролі
  #При деяких діях, змінюе поле "Description" акаунта
  #Реальні зміни виконуються тільки якщо в командному рядку присутній параметр -Force
@@ -13,16 +13,16 @@
     #Файл с акаунтами у вигляді
     #Ivanov.I.I
     #Petrov.P.P
-    #Чи акаунт з паролем розділені пробелом 
+    #Чи акаунт з паролем
     #Sidorov.S.S Password1
     #Vasechkin.V.V Password2
-    #Файл с акаунтами. Без пробелов на початку і у кінці рядка
-    $accounts_file = ".\accounts.txt",
-    #Увимкнути акаунти з $accounts_file
+    #Файл с акаунтами.
+    $AccountsFile = ".\accounts.txt",
+    #Увимкнути акаунти з $AccountsFile
     [switch]$EnableADAccounts = $false,
-    #Вимкнути акаунти з $accounts_file
+    #Вимкнути акаунти з $AccountsFile
     [switch]$DisableADAccounts = $false,
-    #Змінити пароль акаунтов з $accounts_file
+    #Змінити пароль акаунтов з $AccountsFile
     [switch]$ChangePasswordADAccounts = $false,
     #Видаленя акаунтов
     [switch]$DeleteADAccounts = $false,
@@ -161,17 +161,20 @@ function ChangeADAccountPassword($ADAccount, $Password){
         return
     }
 
-    if($Password -eq "" -or $Password -eq $null){
+    if($Password -eq "" -or $Password -eq $null -or $Password.Length -eq 0){
         Write-Error -Message "Функція ChangeADAccountPassword отримала пароль нульової довжини" -Category InvalidArgument
         return
     }
 
     if( -not $ADAccount.Enabled ) {
         $Msg = "Акаунт " + $SAMAccountName +" вже вимкнен. Залишаю як е"
-        Write-Error -Message $Msg -Category InvalidArgument
+        #Write-Error -Message $Msg -Category InvalidArgument
+        Write-Host $Msg -NoNewline
+        return
     }
 
-    Write-Host  "Аккаунт " $SAMAccountName " пароль змінено" -NoNewline
+    $Msg = "Аккаунт " + $SAMAccountName + " встановлюю пароль -" + $Password + "-"
+    Write-Host  $Msg -NoNewline
     $Script:CountReadyAccount++
 
     try {
@@ -191,7 +194,31 @@ function ChangeADAccountPassword($ADAccount, $Password){
     }
 }
 
+#Перелік контроллерів домена.
+#Якщо скріпт зміг получити цей перелік, то це флаг що звязок з доменом працюе
+#Можливо згодиться на майбутне
+$Script:DomainControllers = ""
+
 function InitOk(){
+
+    #Чи підеднані ми до домена AD. Для перевірки отримати перелік контроллерів домена
+    [bool]$isADDomainOk = $True
+    try {
+        $Script:DomainControllers = Get-ADDomainController -Filter * | Select Name
+    }
+    catch {
+        $isADDomainOk = $False
+        Write-Error "Не бачу домена Active Directory"  -Category ConnectionError
+    }
+    if( $Script:DomainControllers.Length -eq 0 ){
+        $isADDomainOk = $False
+        Write-Error "Перелік контроллерів домена отримав, але він пустий. Мабуть не бачу домена Active Directory"  -Category ConnectionError
+    }
+    if($isADDomainOk -eq $False){
+        Return $False
+    }
+
+    #Перевірка чи запущен скріпт з правами адміністратора
     if( -not $DisableCheckAdminRight ){
         #Скріпт повинен бути запущений з правами адміністратора
         if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
@@ -200,12 +227,14 @@ function InitOk(){
         }
     }
 
-    if( -not (Test-Path -Path $accounts_file) ){
-        $Msg = "Файл " + $accounts_file + " з акаунтами не знайдено"
+    #Перевірка чи існуе файл з акаунтами
+    if( -not (Test-Path -Path $AccountsFile) ){
+        $Msg = "Файл " + $AccountsFile + " з акаунтами не знайдено"
         Write-Error $Msg  -Category InvalidArgument
         return $false
     }
 
+    #Перевірка чи правильні параметри в командної строці
     if( $EnableADAccounts -or $DisableADAccounts -or $DeleteADAccounts -or $ChangePasswordADAccounts){
 #    
     }else{
@@ -214,6 +243,7 @@ function InitOk(){
         Return $False
     }
 
+    #Сформувати строку котра буде записана в поле Description акаунта
     if($EnableADAccounts){
         $Script:DescriptionProperty = $DescriptionPrefix_Enable
     }else{
@@ -236,14 +266,24 @@ if (-not (InitOk)) {
     Return
 }
 
-ForEach($Line in Get-Content $accounts_file){
+ForEach($Line in Get-Content $AccountsFile){
 
     $Script:CountReadingAccounts++
     $ADAccount = 0
     $Do = $True
 
-    $UserName = $Line.Trim().Split(" ")[0]
-    $Password = $Line.Trim().split(" ")[1] #Якщо пароля в текстовому файлі не буде, то тут пустий рядок
+#    $UserName = $Line.Trim().Split(" ")[0]
+#    $Password = $Line.Trim().split(" ")[1] #Якщо пароля в текстовому файлі не буде, то тут пустий рядок
+    $UserName = $Line.Trim().Split()[0]
+    $Password = ""
+    $OneStringSplit=$Line.Trim().split()
+    for($III=1; $III -lt $OneStringSplit.Count; $III++){
+        $AAA = $OneStringSplit[$III]
+        if($AAA.Length -gt 0 ){
+            $Password = $AAA
+            Break
+        }
+    }
 
     try {
         $ADAccount = Get-ADUser -Identity $UserName
