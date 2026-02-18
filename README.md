@@ -36,4 +36,8 @@ Sydorenko.S.S password3
 Видалити з Active Directory усі акаунти з файла accounts.txt
 .\ADAccounts.ps1 -AccountsFile "D:\accounts.txt" -DeleteADAccounts -Force
 
+Встановити дату вимкненя акаунтів 10.01.2027. В прикладі нижче стоїть дата в буржуйському стилі. Спочатку місяць, потім день
+Зверніть увагу що во властивостях акаунта буде стояти дата попереднього дня 09.01.2027. Це нормально
+.\ADAccounts.ps1 -AccountsFile .\accounts.txt -SetExpirationDate "01.10.2027"
+
 Якщо параметр -Force буде відсутній, то виконаеться лише імітація роботи скріпта.
