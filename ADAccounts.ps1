@@ -1,4 +1,6 @@
  #
+ # CODING UTF-8
+ #
  #https://github.com/AlexandrGS/ADAccounts
  #
  #Скріпт для обробці разом купи акаунтов домена Active Directory
@@ -28,6 +30,8 @@
     [switch]$DeleteADAccounts = $false,
     #Додатково установити зміну пароля при наступному вході
     [switch]$ChangePasswordAtLogon = $false,
+    #Встановити дату вимкненя акаунта
+    [datetime]$SetExpirationDate = "",
     #Реально застосувати зміни. Без цього параметра тільки імітація 
     [switch]$Force = $false,
     #При декотрих діях змінюе поле "Description" акаунта
@@ -54,6 +58,7 @@ $Script:CountEnablingAccount = 0
 $Script:CountDisablingAccount = 0
 $Script:CountDeletedAccount = 0
 $Script:CountChangePassword = 0
+$Script:CountSetExpirationDate = 0
 $Script:CountErrorByHandlingAccount = 0
 
 Import-Module ActiveDirectory
@@ -194,6 +199,49 @@ function ChangeADAccountPassword($ADAccount, $Password){
     }
 }
 
+#
+function SetExpirationDateForADAccount($ADAccount){
+    $SAMAccountName = $ADAccount.SAMAccountName
+
+    if( ($ADAccount -eq "") -or ($ADAccount -eq $null) -or ($ADAccount -eq 0) ){
+        Write-Error -Message "Функція SetExpirationDateForADAccount отримала пустий параметр ADAccount" -Category InvalidArgument
+        return
+    }
+
+    if($SetExpirationDate -eq ""){
+        Write-Error -Message "Функція SetExpirationDateForADAccount отримала пустий параметр SetExpirationDate" -Category InvalidArgument
+        return
+    }
+
+    Write-Host "Аккаунт  $SAMAccountName" -NoNewline
+
+    $AccountExpirationDate = $ADAccount.AccountExpirationDate
+    if( ($AccountExpirationDate -eq "") -or ($AccountExpirationDate -eq $null) ){
+        Write-Host " не мае дати вимкненя" -NoNewline
+    } else {
+        Write-Host " вже мае дату вимкненя" $AccountExpirationDate -NoNewline
+    }
+    
+    if( -not $ADAccount.Enabled ) {
+        Write-Host " акаунт вже заблокован" -NoNewline
+    }
+
+    Write-Host  " встановлюю дату вимкненя $SetExpirationDate" -NoNewline
+    $Script:CountReadyAccount++
+    try {
+        if($Force){
+            Set-ADAccountExpiration -Identity $SAMAccountName $SetExpirationDate #| Out-Nul
+        }
+        $Script:CountSetExpirationDate++
+        Write-Host " - успішно" -NoNewline
+    }
+    catch{
+        $Script:CountErrorByHandlingAccount++
+        Write-Host " - якась помилка" -NoNewline
+    }
+
+}
+
 #Перелік контроллерів домена.
 #Якщо скріпт зміг получити цей перелік, то це флаг що звязок з доменом працюе
 #Можливо згодиться на майбутне
@@ -235,10 +283,10 @@ function InitOk(){
     }
 
     #Перевірка чи правильні параметри в командної строці
-    if( $EnableADAccounts -or $DisableADAccounts -or $DeleteADAccounts -or $ChangePasswordADAccounts){
+    if( $EnableADAccounts -or $DisableADAccounts -or $DeleteADAccounts -or $ChangePasswordADAccounts -or ($SetExpirationDate -ne "") ){
 #    
     }else{
-        $Msg = "Обовязково повинен бути чи вхідний параметр EnableADAccounts чи DisableADAccounts чи DeleteADAccounts чи ChangePasswordADAccounts"
+        $Msg = "Обовязково повинен бути чи вхідний параметр EnableADAccounts чи DisableADAccounts чи DeleteADAccounts чи ChangePasswordADAccounts чи SetExpirationDate"
         Write-Error -Message $Msg -Category InvalidArgument
         Return $False
     }
@@ -286,7 +334,7 @@ ForEach($Line in Get-Content $AccountsFile){
     }
 
     try {
-        $ADAccount = Get-ADUser -Identity $UserName
+        $ADAccount = Get-ADUser -Identity $UserName -Properties *
     }
 
     catch {
@@ -307,7 +355,11 @@ ForEach($Line in Get-Content $AccountsFile){
                 }else{
                     if($DeleteADAccounts){
                         DeleteADAccount $ADAccount
-                    }
+                    } else {
+                        if($SetExpirationDate -ne ""){
+                            SetExpirationDateForADAccount $ADAccount
+                        }#if($SetExpirationDate -ne ""){
+                    }#if($DeleteADAccounts){
                 }#if($ChangePassword){
             }#if($Disable){
         }#if($Enable)
@@ -325,6 +377,7 @@ ForEach($Line in Get-Content $AccountsFile){
     Write-Host "Усього намагався заблокувати      " $Script:CountDisablingAccount       " акаунтов"
     Write-Host "Усього намагався видалити         " $Script:CountDeletedAccount         " акаунтов"
     Write-Host "Усього намагався зминити пароль   " $Script:CountChangePassword         " акаунтов"
+    Write-Host "Усього намагався зминити дату вимкненя   " $Script:CountChangePassword         " акаунтов"
     Write-Host "Не вдалося обробити               " $Script:CountErrorByHandlingAccount " акаунтов"
     Write-Host "---------------------------------------------------------"
 
